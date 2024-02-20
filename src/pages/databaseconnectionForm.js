@@ -25,8 +25,11 @@ const FnDatabaseConnectionForm = ({
   viewvalue,
   diverts,
   setdiverts,
-  configData
+  configData,
+  typeItem
 }) => {
+  console.log('diverts', diverts)
+
   let { authTokens, user } = useContext(AuthContext);
   const [adata, setAdata] = useState({
     created_by: user.user_id,
@@ -41,21 +44,23 @@ const FnDatabaseConnectionForm = ({
 
 
   //formComp test
+  let fieldData = [];
 
-  let fieldData=[];
+  if (adata["connection_type"] === "MYSQL" || (adata["connection_type"] === undefined && typeItem === "MYSQL")) {
+    // setAdata({...adata, "connection_type": "MYSQL"})
 
-  if(adata["database_type"]=="MYSQL"){
+    fieldData = [
+      { id: 1, name: 'connection_name', label: 'Connection Name', placeholder: 'Enter Connection Name', type: 'text', maxlen: '500', ismandatory: 'Y' },
+      { id: 2, name: 'user_name', label: 'User Name', placeholder: 'Enter User Name', type: 'text', maxlen: '100', ismandatory: 'Y' },
+      { id: 3, name: 'password', label: 'Password', placeholder: 'Enter Password', type: 'password', maxlen: '200', ismandatory: 'N' },
+      { id: 4, name: 'host_id', label: 'Host Id', placeholder: 'Enter Host Id', type: 'text', maxlen: '200', ismandatory: 'Y' },
+      { id: 5, name: 'port', label: 'Port', placeholder: 'Enter Port', type: 'number', maxlen: '200', ismandatory: 'Y' },
+      { id: 6, name: 'database_name', label: 'Database Name', placeholder: 'Enter Database Name', type: 'text', maxlen: '500', ismandatory: 'Y' },
+    ]
+  }
+  else if (adata["connection_type"] === "Oracle" || (adata["connection_type"] === undefined && typeItem === "Oracle")) {
 
-  fieldData = [
-    { id: 1, name: 'connection_name', label: 'Connection Name', placeholder: 'Enter Connection Name', type: 'text', maxlen: '500', ismandatory: 'Y' },
-    { id: 2, name: 'user_name', label: 'User Name', placeholder: 'Enter User Name', type: 'text', maxlen: '100', ismandatory: 'Y' },
-    { id: 3, name: 'password', label: 'Password', placeholder: 'Enter Password', type: 'password', maxlen: '200', ismandatory: 'N' },
-    { id: 4, name: 'host_id', label: 'Host Id', placeholder: 'Enter Host Id', type: 'text', maxlen: '200', ismandatory: 'Y' },
-    { id: 5, name: 'port', label: 'Port', placeholder: 'Enter Port', type: 'number', maxlen: '200', ismandatory: 'Y' },
-    { id: 6, name: 'database_name', label: 'Database Name', placeholder: 'Enter Database Name', type: 'text', maxlen: '500', ismandatory: 'Y' },    
-  ]
-}
-  else if(adata["database_type"]=="Oracle"){
+    // setAdata({...adata, "connection_type" : "Oracle"})
 
     fieldData = [
       { id: 1, name: 'connection_name', label: 'Connection Name', placeholder: 'Enter Connection Name', type: 'text', maxlen: '500', ismandatory: 'Y' },
@@ -67,7 +72,9 @@ const FnDatabaseConnectionForm = ({
     ]
 
   }
-  else if(adata["database_type"]=="Snowflake"){
+  else if (adata["connection_type"] === "Snowflake" || (adata["connection_type"] === undefined && typeItem === "Snowflake")) {
+
+    // setAdata({...adata, "connection_type" : "Snowflake"})
 
     fieldData = [
       { id: 1, name: 'connection_name', label: 'Connection Name', placeholder: 'Enter Connection Name', type: 'text', maxlen: '500', ismandatory: 'Y' },
@@ -81,14 +88,13 @@ const FnDatabaseConnectionForm = ({
     ]
 
   }
-  else{
-    fieldData=[]
-
+  else {
+    fieldData = []
   }
 
-  
+
   let selectedData = {
-    "database_type": [
+    "connection_type": [
       {
         value: "MYSQL",
         label: "MYSQL"
@@ -122,50 +128,56 @@ const FnDatabaseConnectionForm = ({
       }
     );
     let con_data = await con_res.json();
-    
+
     if (con_res.status === 200) {
-    let res = await fetch(
-      `${process.env.REACT_APP_SERVER_URL}/api/upd_rb_db_connect_table/${adata.id}/`,
-      {
-        method: "PUT",
-        body: JSON.stringify(adata),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + String(authTokens.access),
-        },
+      let res = await fetch(
+        `${process.env.REACT_APP_SERVER_URL}/api/upd_rb_connect_definition_table/${adata.id}/`,
+        {
+          method: "PUT",
+          body: JSON.stringify(adata),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + String(authTokens.access),
+          },
+        }
+      );
+      let data = await res.json();
+
+      if (res.status === 200) {
+        setError();
+        setConnectionStatus(con_data)
+        Swal.fire({
+          icon: "success",
+          text: "Connection Updated Successfully!",
+        }).then(function () {
+          close(false);
+        });
+      } else {
+        setError(data);
       }
-    );
-    let data = await res.json();
-    
-    if (res.status === 200) {
+    }
+    else if (con_res.status === 404) {
+      setError(con_data);
+    }
+    else {
       setError();
       setConnectionStatus(con_data)
-      Swal.fire({
-        icon: "success",
-        text: "Connection Updated Successfully!",
-      }).then(function () {
-        close(false);
-      });
-    } else {
-      setError(data);
     }
-  }
-  else if (con_res.status === 404){
-    setError(con_data);
-  }
-  else {
-    setError();
-    setConnectionStatus(con_data)
-  }
   };
 
   //  Function for inserting perspective details
   const fnTestConnection = async () => {
+    let reqData
+    if(typeItem !== undefined){
+      reqData = {...adata, "connection_type": typeItem}
+    } else {
+      reqData = {...adata}
+    }
     let res = await fetch(
       `${process.env.REACT_APP_SERVER_URL}/api/rb_test_db_connection`,
       {
         method: "POST",
-        body: JSON.stringify(adata),
+        body: JSON.stringify(reqData),
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + String(authTokens.access),
@@ -173,12 +185,12 @@ const FnDatabaseConnectionForm = ({
       }
     );
     let data = await res.json();
-    
+
     if (res.status === 200) {
       setError();
       setConnectionStatus(data);
     }
-    else if (res.status === 404){
+    else if (res.status === 404) {
       setError(data);
     }
     else {
@@ -189,11 +201,19 @@ const FnDatabaseConnectionForm = ({
 
   //  Function for inserting perspective details
   const fnSubmitDetails = async () => {
+    let reqData
+    if(typeItem !== undefined){
+      reqData = {...adata, "connection_type": typeItem}
+    } else {
+      reqData = {...adata}
+    }
+    console.log('reqData', reqData)
+
     let con_res = await fetch(
       `${process.env.REACT_APP_SERVER_URL}/api/rb_test_db_connection`,
       {
         method: "POST",
-        body: JSON.stringify(adata),
+        body: JSON.stringify(reqData),
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + String(authTokens.access),
@@ -201,13 +221,13 @@ const FnDatabaseConnectionForm = ({
       }
     );
     let con_data = await con_res.json();
-    
+
     if (con_res.status === 200) {
       let res = await fetch(
-        `${process.env.REACT_APP_SERVER_URL}/api/ins_rb_db_connect_table`,
+        `${process.env.REACT_APP_SERVER_URL}/api/ins_rb_connect_definition_table`,
         {
           method: "POST",
-          body: JSON.stringify(adata),
+          body: JSON.stringify(reqData),
           headers: {
             "Content-Type": "application/json",
             Authorization: "Bearer " + String(authTokens.access),
@@ -229,7 +249,7 @@ const FnDatabaseConnectionForm = ({
         setError(data);
       }
     }
-    else if (con_res.status === 404){
+    else if (con_res.status === 404) {
       setError(con_data);
     }
     else {
@@ -263,7 +283,7 @@ const FnDatabaseConnectionForm = ({
       const newdata = a.map(
         ({
           id,
-          database_type,
+          connection_type,
           connection_name,
           database_name,
           host_id,
@@ -279,7 +299,7 @@ const FnDatabaseConnectionForm = ({
           last_updated_by,
         }) => ({
           id,
-          database_type,
+          connection_type,
           connection_name,
           database_name,
           host_id,
@@ -299,8 +319,9 @@ const FnDatabaseConnectionForm = ({
       setAction(true);
       setdiverts(false);
     }
+    // setAdata()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [action]);
+  }, [action, diverts]);
 
   if (adata.last_updated_by !== user.user_id) {
     setAdata({ ...adata, last_updated_by: user.user_id });
@@ -320,21 +341,21 @@ const FnDatabaseConnectionForm = ({
   // const help = helper.filter(user => String(user.page_no)
   //   .includes(String(id))).map((use) => use);
 
-return (
+  return (
     <div className="sc_cl_div w-100 px-2">
-      
+
       <div>
         <Form>
           <Form.Group className="sc_cl_form_alignment">
             <div className="sc_cl_field_alignment" >
               <div className="gap-1">
-                <Form.Label className="sc_cl_label" >Database Type <sup className="text-danger fs-6">*</sup>
+                <Form.Label className="sc_cl_label" >Connection Type <sup className="text-danger fs-6">*</sup>
                 </Form.Label>
                 <Form.Select
                   className="ms-2 w-25"
-                  name={"database_type"}
-                  value={adata["database_type"] || ''}
-                  onChange={(e) =>fnInputHandler(e.target.name,e.target.value)}//(e) => setDBSelect(e.target.value)
+                  name={"connection_type"}
+                  value={adata["connection_type"] || typeItem || ''}
+                  onChange={(e) => fnInputHandler(e.target.name, e.target.value)}//(e) => setDBSelect(e.target.value)
                   disabled={false}
                   size="sm"
                 >
@@ -351,8 +372,8 @@ return (
 
       <Row className="mt-2 mt-lg-2 sc-cl-main-content">
 
-        <FnFormComponent fields={fieldData} select={selectedData} formData={adata} onchange={fnInputHandler} onsubmit={fnSubmitDetails} 
-        errorcode={error} disablevalue={viewvalue} stylename={"sc_cl_input mb-2"} tooltipvalue={false} />
+        <FnFormComponent fields={fieldData} select={selectedData} formData={adata} onchange={fnInputHandler} onsubmit={fnSubmitDetails}
+          errorcode={error} disablevalue={viewvalue} stylename={"sc_cl_input mb-2"} tooltipvalue={false} />
 
         <div>
           {connectionstatus &&

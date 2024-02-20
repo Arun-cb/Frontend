@@ -48,7 +48,7 @@ const FnDatabaseConnection = () => {
       : process.env.REACT_APP_PAGINATION;
   const endingIndex = startingIndex + Number(PageSize);
 
-  const columns_to = ["connection_name", "database_type", "user_name"];
+  const columns_to = ["connection_name", "connection_type", "user_name"];
   const columns_type = ["str", "str", "str"];
 
   const date_columns = [];
@@ -56,7 +56,7 @@ const FnDatabaseConnection = () => {
   const newadata = adata.map(
     ({
       id,
-      database_type,
+      connection_type,
       connection_name,
       database_name,
       host_id,
@@ -72,7 +72,7 @@ const FnDatabaseConnection = () => {
       last_updated_by,
     }) => ({
       id,
-      database_type,
+      connection_type,
       connection_name,
       database_name,
       host_id,

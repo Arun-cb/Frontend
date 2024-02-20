@@ -130,7 +130,7 @@ const FnRestfulConnectionForm = ({
 
 
         let res = await fetch(
-            `${process.env.REACT_APP_SERVER_URL}/api/upd_rb_db_connect_definition_table/${adata.id}/`,
+            `${process.env.REACT_APP_SERVER_URL}/api/upd_rb_connect_definition_table/${adata.id}/`,
             {
                 method: "PUT",
                 body: JSON.stringify(SendingData),

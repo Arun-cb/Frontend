@@ -17,7 +17,7 @@ const FnYDataProfiling = ({ datasource }) => {
             <iframe
                 title="YData Profiling Report"
                 srcDoc={datasource}
-                style={{ width: '100%', height: '900px', border: 'none' }}
+                style={{ width: '100%', height: '100%', border: 'none', overflow: 'hidden' }}
             />
         </div>
     );

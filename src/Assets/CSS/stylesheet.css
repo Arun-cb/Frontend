@@ -3277,6 +3277,14 @@ body {
   border-radius: 5px;
 }
 
+.sc-cl-side-content {
+  /* margin: 25px 50px; */
+  margin-left: 10px !important;
+  background-color: white;
+  padding: 20px !important;
+  border-radius: 5px;
+}
+
 .row {
   --bs-gutter-x: 0 !important;
   --bs-gutter-y: 0 !important;
@@ -3806,4 +3814,93 @@ body {
 .sc_cl_connection_failed{
   font-size: 10px;
   color: red;
+}
+
+
+
+.borderRight{
+  border-right: 1px solid #dee2e6;
+}
+
+.connectionContent{
+  overflow-y: auto;
+}
+
+
+.connectionContent label {
+  top: 10;
+  font-size: 15px;
+  /* font-style: italic; */
+  font-weight: 300;
+  margin-bottom: 15px;
+}
+
+
+.feedback{
+  background: #FFF;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
+  /* overflow: auto; */
+}
+
+
+.feedback__question{
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.burmanRadio {
+  margin-bottom: 10px;
+}
+
+.burmanRadio__input {
+  display: none;
+}
+
+.burmanRadio__label {
+  cursor: pointer;
+  line-height: 30px;
+  position: relative;
+  margin-left: 35px;
+}
+
+.burmanRadio__label::before,
+.burmanRadio__label::after {
+  border-radius: 50%;
+  position: absolute;
+  top: -1.5px;
+  left: -35px;
+  transition: all 0.3s ease-out;
+  z-index: 2;
+  margin: 5px;
+}
+
+.burmanRadio__label::before {
+  content: "";
+  border: 1.5px solid #E4E4E4;
+  width: 20px;
+  height: 20px;
+}
+
+.burmanRadio__label::after {
+  content: "\2713";
+  background: #7BC4CA;
+  border: 1.5px solid #7BC4CA;
+  color: #FFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  width: 20px;
+  height: 20px;
+  transform: scale(0);
+}
+.burmanRadio__label:hover::before {
+  border-color: #7BC4CA;
+}
+
+.burmanRadio__input:checked ~ .burmanRadio__label::after {
+  opacity: 1;
+  transform: scale(1);
 }

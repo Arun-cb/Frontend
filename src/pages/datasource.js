@@ -13,10 +13,11 @@ import FnBreadCrumbComponent from "../components/breadCrumbComponent";
 import AuthContext from "../context/AuthContext";
 import FnTabComponent from "../components/tabComponent";
 import { useNavigate, useParams } from "react-router-dom";
-import FnReportBuilder from "./databaseconnection";
+// import FnReportBuilder from "./databaseconnection";
 import { BsDatabaseFillAdd } from "react-icons/bs";
 import { TbApi } from "react-icons/tb";
 import FnRestfulConnection from "./restfulConnection";
+import FnConnectionDefinition from "./connectionDefinitionReport";
 
 const FnDataSource = () => {
     let { authTokens, user } = useContext(AuthContext);
@@ -35,16 +36,21 @@ const FnDataSource = () => {
     const tabOptions = [
         {
             id: 1,
-            label: "Database Connection",
+            label: "Connection Setup",
             icon: <BsDatabaseFillAdd size={20} />,
-            content: <FnReportBuilder />,
+            content: <FnConnectionDefinition />,
+        // {
+        //     id: 1,
+        //     label: "Database Connection",
+        //     icon: <BsDatabaseFillAdd size={20} />,
+        //     content: <FnReportBuilder />,
         },
-        {
-            id: 2,
-            label: "Restful Connection",
-            icon: <TbApi size={20} />,
-            content: <FnRestfulConnection />,
-        },
+        // {
+        //     id: 2,
+        //     label: "Restful Connection",
+        //     icon: <TbApi size={20} />,
+        //     content: <FnRestfulConnection />,
+        // },
         // {
         //   id: 3,
         //   label: "Session Management",

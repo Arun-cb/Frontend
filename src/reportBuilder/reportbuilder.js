@@ -40,7 +40,7 @@ const FnStepReportBuilder = () => {
   let { authTokens, user } = useContext(AuthContext);
 
   // To Save DB Connection Data in a State
-  const [getSavedConnections, setSavedConnections] = useState({})
+  const [getSavedConnections, setSavedConnections] = useState([])
   const [getconnectiondbstr, setconnectionstr] = useState([])
   const [getsavedQueryDefinition, setSavedQueryDefinition] = useState([])
 
@@ -166,20 +166,8 @@ const FnStepReportBuilder = () => {
 
 
   const fetchSavedConnections = async () => {
-    let savedConRes = {}
 
     let savedConnectionRequest = await fetch(
-      `${process.env.REACT_APP_SERVER_URL}/api/get_rb_db_connect_table`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + String(authTokens.access),
-        },
-      }
-    );
-
-    let savedConnectionRestRequest = await fetch(
       `${process.env.REACT_APP_SERVER_URL}/api/get_rb_connect_definition_table`,
       {
         method: "GET",
@@ -190,18 +178,30 @@ const FnStepReportBuilder = () => {
       }
     );
 
+    // let savedConnectionRestRequest = await fetch(
+    //   `${process.env.REACT_APP_SERVER_URL}/api/get_rb_connect_definition_table`,
+    //   {
+    //     method: "GET",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: "Bearer " + String(authTokens.access),
+    //     },
+    //   }
+    // );
+
 
     let savedConnectionResults = await savedConnectionRequest.json();
-    let savedConnectionRestResults = await savedConnectionRestRequest.json();
+    // let savedConnectionRestResults = await savedConnectionRestRequest.json();
 
     if (savedConnectionRequest.status === 200) {
       // savedConRes = [...savedConnectionResults]
-      savedConRes = { DB: savedConnectionResults }
+      // savedConRes = { DB: savedConnectionResults }
+      setSavedConnections(savedConnectionResults)
     }
-    if (savedConnectionRestRequest.status === 200) {
-      savedConRes = { ...savedConRes, REST: savedConnectionRestResults }
-    }
-    setSavedConnections(savedConRes)
+    // if (savedConnectionRestRequest.status === 200) {
+    //   savedConRes = { ...savedConRes, REST: savedConnectionRestResults }
+    // }
+    // setSavedConnections(savedConRes)
   }
 
   const handleDbConnection = async (connectionParameter, type) => {
@@ -218,7 +218,7 @@ const FnStepReportBuilder = () => {
       }
     );
     let connectResults = await connectonRequest.json()
-    
+
     if (connectonRequest.status === 200) {
       setconnectionstr({
         [connectionParameter.connection_name]: connectResults,
@@ -497,17 +497,15 @@ const FnStepReportBuilder = () => {
 
   function WizardNavigation(data) {
     console.log("data", data)
-    if (data === 'DB') {
-      handleNext(rightItems, getselectedItems, getSelectedColumn, rows, getjoinrows, query, 3)
-    } else {
+    if (data === 'Rest_api') {
       setShowComponent(true)
       setstepCount(0)
+    } else {
+      handleNext(rightItems, getselectedItems, getSelectedColumn, rows, getjoinrows, query, 3)
     }
 
   }
-  const handlesavedetails = async() => {
-    console.log("------- handlesavedetails -------")
-    console.log("getalldata", getalldata)
+  const handlesavedetails = async () => {
     let Response = await fetch(
       `${process.env.REACT_APP_SERVER_URL}/api/ins_and_upd_connection_data`,
       {
@@ -521,7 +519,6 @@ const FnStepReportBuilder = () => {
     );
     let connectResults = await Response.json()
     alert(connectResults)
-    console.log("connectResults", connectResults)
   }
 
   const handleQueryColumnData = async (data) => {
@@ -582,7 +579,7 @@ const FnStepReportBuilder = () => {
             {stepCounter.map((stepItems, stepIndex) => {
               return (
                 <div className={`${getstepCount >= stepItems.id ? "d-flex flex-column align-items-center" : "d-flex flex-column align-items-center nextstep"}`} key={stepIndex} >
-                <div className={`${stepItems.id == 8 ? `number_counter_container_last_child` : 'number_counter_container'} ${getstepCount > stepItems.id ? "completedStep" : ''}`}>
+                  <div className={`${stepItems.id == 8 ? `number_counter_container_last_child` : 'number_counter_container'} ${getstepCount > stepItems.id ? "completedStep" : ''}`}>
                     <p className="m-0">{getstepCount > stepItems.id ? <FaRegCircleCheck /> : ''}</p>
                     {/* <p className="m-0">{getstepCount > stepItems.id ? <FaRegCircleCheck /> : stepItems.id}</p> */}
                   </div>
@@ -639,7 +636,7 @@ const FnStepReportBuilder = () => {
             getSelectedColumn={getSelectedColumn} rows={rows} getjoinrows={getjoinrows} query={query}
             getactivateButtons={getactivateButtons} setActiveButtons={setActiveButtons}
             gettoastMessage={gettoastMessage} setToastMessage={setToastMessage}
-            getcacheData = {getcacheData}
+            getcacheData={getcacheData}
             setAlldata={setAlldata}
             getalldata={getalldata}
             user={user}
@@ -1041,7 +1038,7 @@ console.log("getalldata", getalldata)
           </div>
         <div className="d-flex gap-2">
           {
-            getSavedConnections && getSavedConnections['DB'].length > 0 && getSavedConnections['DB'].map((savedConnectionItems, tableIndex) => {
+            getSavedConnections.length > 0 && getSavedConnections.map((savedConnectionItems, tableIndex) => {
               return (
                 // <div 
                 // className={`col-2 p-3 shadow-sm rounded d-flex flex-column align-items-start gap-2 
@@ -1074,7 +1071,7 @@ console.log("getalldata", getalldata)
               )
             })
           }
-          {
+          {/* {
             getSavedConnections && getSavedConnections['REST'].length > 0 && getSavedConnections['REST'].map((savedConnectionItems, tableIndex) => {
               return (
                 <div className="col-2 p-3 bg-white shadow-sm rounded d-flex flex-column align-items-start gap-2" key={tableIndex}>
@@ -1087,7 +1084,7 @@ console.log("getalldata", getalldata)
                       }
                     />
 
-                    <p className="m-0">{savedConnectionItems.connection_name} / {savedConnectionItems.database_type}</p>
+                    <p className="m-0">{savedConnectionItems.connection_name} / {savedConnectionItems.connection_type}</p>
                   </div>
 
                   <div className="align-items-center d-flex gap-4">
@@ -1100,7 +1097,7 @@ console.log("getalldata", getalldata)
                 </div>
               )
             })
-          }
+          } */}
         </div>
       </div>
       {
@@ -1464,7 +1461,7 @@ const FnColumnSelection = ({ rightItems, authTokens, getselectedConnections, get
   const handlePostColumnData = async () => {
     const transformedData = {};
 
-    
+
     getselectedItems.forEach(({ table_name, column }) => {
       if (!transformedData[table_name]) {
         transformedData[table_name] = {
@@ -1698,7 +1695,7 @@ const FnColumnAliasSelection = ({ getSelectedColumn, authTokens, getsavedQueryDe
 
   const [gettoastMessage, setToastMessage] = useState(false)
 
-  
+
 
 
 
@@ -1783,7 +1780,7 @@ const FnColumnAliasSelection = ({ getSelectedColumn, authTokens, getsavedQueryDe
       list[i]['setMultiValue'] = Array.isArray(e) ? e.map(x => x.value) : []
     }
 
-    
+
     setColumnAlias(list);
   };
 
@@ -1798,7 +1795,7 @@ const FnColumnAliasSelection = ({ getSelectedColumn, authTokens, getsavedQueryDe
     ])
   }
   useEffect(() => {
-    if(getcolumnalias.length === 0){
+    if (getcolumnalias.length === 0) {
       setColumnAlias([{
         selectedTableName: '',
         selectedColumnName: '',
@@ -2090,7 +2087,7 @@ const FnColumnAggreation = ({ getSelectedColumn, authTokens, getsavedQueryDefini
 
   useEffect(() => {
     handleGetSavedColumnData()
-    if(rows.length === 0){
+    if (rows.length === 0) {
       setRows([{
         selectedTable: '',
         selectedColumn: '',
@@ -2232,14 +2229,14 @@ const FnColumnAggreation = ({ getSelectedColumn, authTokens, getsavedQueryDefini
         resultItems.table_name === aggregrateItems.selectedTable
       )
 
-      
+
 
       const updatedColumnIdResult = getColumnId.find((columnResultItems) =>
         columnResultItems.table_column_query_id === getsavedQueryDefinition.id &&
         columnResultItems.column_name === aggregrateItems.selectedColumn
       )
 
-      
+
 
       return {
         ...aggregrateItems,
@@ -2251,7 +2248,7 @@ const FnColumnAggreation = ({ getSelectedColumn, authTokens, getsavedQueryDefini
       }
     })
 
-    
+
 
 
     const requestAggregateTabelData = await fetch(
@@ -2398,7 +2395,6 @@ const FnColumnAggreation = ({ getSelectedColumn, authTokens, getsavedQueryDefini
 
 const FnJoinOperation = ({ getSelectedColumn, getselectedConnections, authTokens, getsavedQueryDefinition, getjoinrows,
   setJoinRows, getallcolumns, setAllColumns }) => {
-    console.log("getjoinrows", getjoinrows)
   const [getTableIdtoMerge, setTableIdToMerge] = useState([])
 
   const [getToast, setToast] = useState([])
@@ -2414,14 +2410,14 @@ const FnJoinOperation = ({ getSelectedColumn, getselectedConnections, authTokens
 
   useEffect(() => {
     handleGetSavedTableData()
-    if(getjoinrows.length === 0){
+    if (getjoinrows.length === 0) {
       setJoinRows([{
-          selectedTable: '',
-          selectedColumn: '',
-          selectedAttribute: '',
-          selectedTable2: '',
-          selectedColumn2: '',
-        }])
+        selectedTable: '',
+        selectedColumn: '',
+        selectedAttribute: '',
+        selectedTable2: '',
+        selectedColumn2: '',
+      }])
     }
   }, [])
 
@@ -2881,7 +2877,7 @@ const FnTableColumnFilter = ({ selectedTables, authTokens, getSelectedColumn, ge
     setQuery(list);
   };
 
-  
+
 
 
   const handlepostFilterData = async () => {
@@ -3962,12 +3958,6 @@ const FnQueryResults = ({
 
   const [getsharedquerydefinition, setSharedQueryDefinition] = useState([]);
 
-  const [getshowmodal, setShowModal] = useState(false);
-
-  const handleClose = () => {
-    setQueryDataResults([])
-    setShowModal(false)
-  };
 
   // ! revan State
   const [getqueryresult, setQueryResult] = useState([])
@@ -4034,9 +4024,53 @@ const FnQueryResults = ({
   let [sortcolumn, setSortColumn] = useState("");
   let [sortorder, setSortOrder] = useState(true);
 
+  // ? YData Profile Model
+  const [customshowmodel, setCustomShowModel] = useState({ status: false, data: '' });
+
+  const [getActiveTab, setActiveTab] = useState(Number(1));
+
+  const [getcustomstate, setCustomState] = useState([{ label: "Interaction", value: true,correlations:[{status:true},{status:true},{status:true},{status:true},{status:true},{status:true},{status:true}] },
+  {
+    id: 1, label: "Correlation", value: true,
+    correlations: [
+      { method: "Auto", status: true, about: " (It calculates the column pairwise correlation depending on the type schema)", disabled: true },
+      { method: "Pearson", status: false, about: " (For assessing the strength and direction of a linear relationship between two variables)", disabled: false },
+      { method: "Spearman", status: false, about: " (It assesses the strength and direction of monotonic links between variables, used for evaluating relations between categorical or ordinal variables)", disabled: false },
+      { method: "Kendall", status: false, about: " (It is used to measure the ordinal association between two measured quantities)", disabled: false },
+      { method: "Phi K", status: false, about: " (For Mixed-type variables or (un)expected correlation. To evaluate their statistical significance)", disabled: false },
+      { method: "Cramers", status: false, about: " (To find theassociation between categorical variables when there is more than 2x2 contingency)", disabled: false },
+    ]
+  },
+  { id: 2, label: "Missing Value", value: true, type: "",correlations:[{status:true},{status:true},{status:true},{status:true},{status:true},{status:true},{status:true}] },
+  // { id: 3, label: "Duplicate", value: true },
+  { id: 3, label: "Sample Data", value: true,correlations:[{status:true},{status:true},{status:true},{status:true},{status:true},{status:true},{status:true}] },
+  { id: 4, label: "Time Series", value: false,correlations:[{status:true},{status:true},{status:true},{status:true},{status:true},{status:true},{status:true}] }]);
+
+  const openActiveTab = (tabId) => {
+    setActiveTab(tabId);
+  };
+
+  const handleCheckboxChange = (e, index, correlation_index) => {
+    const updatedState = [...getcustomstate];
+    if (e.target.name == "label_switch") {
+      updatedState[index].value = !updatedState[index].value;
+      // if(correlation_index != undefined){
+      updatedState[index].correlations[0].status = !updatedState[index].correlations[0].status
+      for(let i=1;i<=5;i++){
+      updatedState[index].correlations[i].status = false
+      }
+    // }
+    }
+    if (e.target.name == "correlation_switch") {
+      updatedState[index].correlations[correlation_index].status = !updatedState[index].correlations[correlation_index].status
+    }
+    setCustomState(updatedState);
+  }
+
+
   const fnGetConnectionData = async (selected_data) => {
     let res = await fetch(
-      `${process.env.REACT_APP_SERVER_URL}/api/get_rb_db_connect_table/${selected_data.connection_id}/`,
+      `${process.env.REACT_APP_SERVER_URL}/api/get_rb_connect_definition_table/${selected_data.connection_id}/`,
       {
         method: "GET",
         headers: {
@@ -4067,12 +4101,12 @@ const FnQueryResults = ({
     //   setstepCount(getstepCount + 1)
     // } getedit,
   }, [startingIndex, PageSize, sortcolumn, sortorder])
-  
+
 
 
   const fnGetQueryDefinitionDetails = async () => {
     const querydefinitionDataRequest = await fetch(
-      `${process.env.REACT_APP_SERVER_URL}/api/${dynamic_get_api}/${startingIndex}/${endingIndex}/${user.username}/${sortcolumn? sortorder ? "-"+sortcolumn : sortcolumn  :'delete_flag'}/${search}`,
+      `${process.env.REACT_APP_SERVER_URL}/api/${dynamic_get_api}/${startingIndex}/${endingIndex}/${user.username}/${sortcolumn ? sortorder ? "-" + sortcolumn : sortcolumn : 'delete_flag'}/${search}`,
       {
         method: "GET",
         headers: {
@@ -4189,7 +4223,7 @@ const FnQueryResults = ({
           // Check if there is an aggregate function for the column
           const aggregateData = aggregateTableDataResult.find(aggregate => aggregate.table_aggregate_column_id === column.id);
 
-          
+
           if (aggregateData) {
             selectedColumn = `${aggregateData.agg_fun_name}(${colFunction}${tableName}.${columnName}${colFunctionClose})${aliasName}`;
           } else {
@@ -4216,11 +4250,11 @@ const FnQueryResults = ({
         const columnNameOneObj = columnDataResult.find((column) => column.column_name === join.join_column_name1);
         const columnNameTwoObj = columnDataResult.find((column) => column.column_name === join.join_column_name2);
 
-        
+
         const columnNameOne = columnNameOneObj ? columnNameOneObj.column_name : "id";
         const columnNameTwo = columnNameTwoObj ? columnNameTwoObj.column_name : "query_id"
 
-        
+
         // Check for join type and conditions
         let joinType = join.join_type || "INNER JOIN"; // Default to INNER JOIN if not specified
         let condition = `${tableNameOne}.${columnNameOne} = ${tableNameTwo}.${columnNameTwo}`;
@@ -4259,7 +4293,7 @@ const FnQueryResults = ({
       // Fetch query definition data
 
       let savedConnectionRequest = await fetch(
-        `${process.env.REACT_APP_SERVER_URL}/api/get_rb_db_connect_table`,
+        `${process.env.REACT_APP_SERVER_URL}/api/get_rb_connect_definition_table`,
         {
           method: "GET",
           headers: {
@@ -4338,7 +4372,7 @@ const FnQueryResults = ({
       const aggregateTableDataResult = await aggregateTableDataRequest.json()
       const joinTableDataResult = await joinTableDataRequest.json()
 
-      
+
 
       const connectionId = queryDefResult[0].connection_id;
       const matchedConnection = savedConnectionResults.find(conn => conn.id === connectionId);
@@ -4407,7 +4441,7 @@ const FnQueryResults = ({
         }
       })
 
-      
+
 
 
 
@@ -4429,7 +4463,7 @@ const FnQueryResults = ({
         };
       });
 
-      
+
 
       setRows(columnaggregateEdit)
 
@@ -4453,7 +4487,7 @@ const FnQueryResults = ({
       })
 
 
-      
+
       setJoinRows(columnJoinEdit)
 
 
@@ -4497,18 +4531,18 @@ const FnQueryResults = ({
 
   };
 
-  
+
   // ? View Query
-  const fnPreviewDetails = async (data) => {
+  const fnPreviewDetails = async (data, bool) => {
 
     // let testSample = sampleQuery.filter(itm => itm.query_id == data.id)
     // setDefinitionData(testSample)
-    setPreview(true);
+    setPreview(bool);
 
     let updatedSelectedConnections = { ...getselectedConnections };
 
     let res = await fetch(
-      `${process.env.REACT_APP_SERVER_URL}/api/get_rb_db_connect_table/${data.connection_id}/`,
+      `${process.env.REACT_APP_SERVER_URL}/api/get_rb_connect_definition_table/${data.connection_id}/`,
       {
         method: "GET",
         headers: {
@@ -4521,7 +4555,7 @@ const FnQueryResults = ({
 
     if (res.status === 200) {
       updatedSelectedConnections = { ...data, savedConnectionItems: data_res[0] };
-      
+
     } else {
       window.alert("Error API 1")
     }
@@ -4529,7 +4563,7 @@ const FnQueryResults = ({
 
     // let twoObjcts = { ...updatedSelectedConnections, query: testSample[0].query }
 
-    
+
     let fetchTableRequest = await fetch(
       `${process.env.REACT_APP_SERVER_URL}/api/get_query_result`,
       {
@@ -4617,8 +4651,15 @@ const FnQueryResults = ({
 
   }
 
+
+  const fnCustomDataProfiling = (status, data) => {
+    setCustomShowModel({ status: status, data: data })
+
+  }
+
   // ? YDATA PROFILING
-  const fnGetDataProfiling = async (profilingdata) => {
+  const fnGetDataProfiling = async (profilingdata, getcustomstate) => {
+    let updatedSelectedConnections = { ...getselectedConnections };
 
     Swal.fire({
       icon: "info",
@@ -4628,6 +4669,8 @@ const FnQueryResults = ({
       confirmButtonText: "Ok",
     }).then(async function (result) {
       if (result.isConfirmed) {
+
+
 
         Swal.fire({
           title: "In Progress",
@@ -4640,9 +4683,9 @@ const FnQueryResults = ({
           }
         })
 
-        let updatedSelectedConnections = { ...getselectedConnections };
+
         let res1 = await fetch(
-          `${process.env.REACT_APP_SERVER_URL}/api/get_rb_db_connect_table/${profilingdata.connection_id}/`,
+          `${process.env.REACT_APP_SERVER_URL}/api/get_rb_connect_definition_table/${profilingdata.connection_id}/`,
           {
             method: "GET",
             headers: {
@@ -4653,7 +4696,7 @@ const FnQueryResults = ({
         );
         let data_res = await res1.json();
         if (res1.status === 200) {
-          updatedSelectedConnections = { ...profilingdata, savedConnectionItems: data_res[0] };
+          updatedSelectedConnections = { ...profilingdata, savedConnectionItems: data_res[0], customdata: getcustomstate };
         } else {
           window.alert("Error API 1")
         }
@@ -4676,7 +4719,7 @@ const FnQueryResults = ({
 
           // Assuming that the server returns the URL of the HTML file
           const newWindow = window.open(`http://localhost:3000/data_profiling`, '_blank');
-          
+
           // Render your React component in the new window
           const component = (
             <FnYDataProfiling datasource={data} />
@@ -4688,13 +4731,13 @@ const FnQueryResults = ({
           // Inject the serialized component into the new window
           newWindow.document.write(componentString);
           newWindow.document.title = 'YData Profiling Report';
-        
+
         } else {
           Swal.close();
 
           // Assuming that the server returns the URL of the HTML file
           const newWindow = window.open(`http://localhost:3000/data_profiling`, '_blank');
-          
+
           // Render your React component in the new window
           const component = (
             <FnYDataProfiling datasource={data} />
@@ -4710,10 +4753,8 @@ const FnQueryResults = ({
 
 
       }
-    
+
     });
-
-
 
   }
 
@@ -4721,7 +4762,6 @@ const FnQueryResults = ({
   let newadata_preview = [...getqueryview.map((d) => d.data)]
   const columns_type_preview = [];
   const date_columns_preview = [];
-  
 
 
   return (
@@ -4730,25 +4770,25 @@ const FnQueryResults = ({
         <div className="sc_cl_row card-header">
           <div className="sc_cl_div d-flex justify-content-end">
             {
-              searchBar ? 
-              <input
-                type='text'
-                className='sc_cl_Search me-2'
-                placeholder='Search'
-                value={search || ''}
-                onChange={(e) => {
-                  setSearch(e.target.value)
-                }}
-              /> : ''
+              searchBar ?
+                <input
+                  type='text'
+                  className='sc_cl_Search me-2'
+                  placeholder='Search'
+                  value={search || ''}
+                  onChange={(e) => {
+                    setSearch(e.target.value)
+                  }}
+                /> : ''
             }
 
             {
-              exportBtn ? 
-              <FnExportComponent
-                data={getquerydefinition}
-                columns={columns_to}
-                csvdata={getquerydefinition}
-              /> : ''
+              exportBtn ?
+                <FnExportComponent
+                  data={getquerydefinition}
+                  columns={columns_to}
+                  csvdata={getquerydefinition}
+                /> : ''
             }
 
             {
@@ -4887,7 +4927,7 @@ const FnQueryResults = ({
                           {data.query_status === true ? (
                             <MdOutlinePreview
                               className="sc_cl_table_icons text-black ms-2"
-                              onClick={() => fnPreviewDetails(data)}
+                              onClick={() => fnPreviewDetails(data, true)}
                               size={18}
                             />
                           ) : (
@@ -4895,14 +4935,14 @@ const FnQueryResults = ({
                               className="sc_cl_table_icons text-black opacity-50 ms-2"
                               size={18}
                               // onClick={() => fnPreviewDetails(data)}
-                            style={{ cursor: "not-allowed" }}
+                              style={{ cursor: "not-allowed" }}
                             />
                           )}
 
                           {data.query_status === true ? (
                             <MdOutlineAnalytics
                               className="sc_cl_table_icons text-warning ms-2"
-                              onClick={() => fnGetDataProfiling(data)}
+                              onClick={() => { fnCustomDataProfiling(true, data); fnPreviewDetails(data, false) }}
                               size={18}
                             />
                           ) : (
@@ -5169,6 +5209,133 @@ const FnQueryResults = ({
         </Modal.Footer>
       </Modal>
 
+      <Modal
+        show={customshowmodel.status}
+        centered
+        className="custom-modal modal-xl"
+        onHide={() => setCustomShowModel({ status: false, data: '' })}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className="h5">Data Profile Customization</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="d-flex">
+
+            <div className="col-lg-2">
+              <div className={`border d-block myTabContent tab-content h-100 border-end-0
+                `}>
+
+                <ul className="nav flex-column h-100" id="myTab" role="tablist">
+                  <li className="d-flex flex-column justify-content-evenly nav-item w-100 h-100" role="presentation">
+                    {getcustomstate.map((tabItem, index) => (
+                      <div
+                        className={`nav-link d-flex flex-row  align-items-center gap-2
+                        ${getActiveTab === tabItem.id
+                            ? "active text-primary bg-info bg-opacity-25 border shadow-sm border-info border-end-0"
+                            : "text-secondary active-tab border-0 border-bottom-0 border-top-0"
+                          }`}
+                        id="home-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#home"
+                        role="tab"
+                        aria-controls="home"
+                        aria-selected="true"
+                        key={tabItem.id}
+                        onClick={() => openActiveTab(tabItem.id)}
+                      >
+                        <div className="mt-1 small child-label">{tabItem.label}</div>
+                      </div>
+                    ))}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="col-lg-10">
+              <div
+                className="border d-block tab-content myTabContent border-info"
+              // id="myTabContent"
+              // style={{ height: "350px" }}
+              >
+                {getcustomstate.map(
+                  (tabOptions, index) =>
+                    getActiveTab === tabOptions.id && (
+                      <div
+                        key={tabOptions.id}
+                        className="tab-pane fade show active"
+                        role="tabpanel"
+                        aria-labelledby="home-tab"
+                      >
+                        <div className="d-flex p-2">
+                          <label className="d-flex col-6"> {tabOptions.label}</label>
+                          <div className="d-flex justify-content-end col-6">
+                            <Form>
+                              <Form.Check
+                                type="switch"
+                                id="custom-switch"
+                                name="label_switch"
+                                label={tabOptions.value ? 'Enabled' : 'Disabled'}
+                                checked={tabOptions.value}
+                                onClick={(e) => handleCheckboxChange(e, index)}
+                              />
+                            </Form>
+                          </div>
+
+                        </div>
+
+                        <div className="d-flex flex-column px-3 py-1">
+                          {tabOptions.label == "Correlation" &&
+                            <>
+                              <div className="border shadow-sm">
+                                {tabOptions.correlations.map((item, correlation_index) =>
+                                  <div className="d-flex col-12 p-2 border-bottom">
+                                    <div className="d-flex justify-content-start align-items-center col-10 small gap-3">
+                                      <div className="fw-bold d-flex col-1">{item.method}</div>
+                                      <div className="d-flex col-11">{item.about}</div></div>
+                                    <div className="d-flex justify-content-end col-2">
+                                      <Form>
+                                        <Form.Check
+                                          className="small"
+                                          type="switch"
+                                          id="custom-switch"
+                                          name="correlation_switch"
+                                          // label={item.status ? 'Enabled' : 'Disabled'}
+                                          checked={item.status}
+                                          onChange={(e) => handleCheckboxChange(e, index, correlation_index)}
+                                          disabled={item.disabled || !tabOptions.value}
+                                        />
+                                      </Form>
+                                    </div>
+                                  </div>)}
+
+                              </div>
+                            </>
+                          }
+                        </div>
+                      </div>
+                    )
+                )}
+              </div>
+            </div>
+
+          </div>
+
+
+        </Modal.Body>
+        <Modal.Footer className="">
+          <FnBtnComponent
+            onClick={() => { setCustomShowModel({ status: false, data: customshowmodel.data }); fnGetDataProfiling(customshowmodel.data, getcustomstate) }}
+            children={"Proceed"}
+            classname={"sc_cl_submit_button"}
+          ></FnBtnComponent>
+          <FnBtnComponent
+            onClick={() => { setCustomShowModel({ status: false, data: '' }) }}
+            children={"Close"}
+            classname={"sc_cl_close_button"}
+          ></FnBtnComponent>
+        </Modal.Footer>
+      </Modal>
+
     </div>
   )
 }
@@ -5249,7 +5416,7 @@ const FnTabPage = ({
         searchBar={true}
         exportBtn={true}
         addnewBtn={false}
-        />,
+      />,
     }
   ];
 
